@@ -1,6 +1,7 @@
 const cors = require("cors");
 const axios = require("axios");
 const express = require("express");
+const { loadUserFromGithub } = require("./utils/utils");
 const app = express();
 require("dotenv").config();
 
@@ -14,9 +15,10 @@ app.get("/", (req, res) => {
 
 app.post("/authenticate", async (req, res) => {
   const code = req.body.code;
+  const getAccessToken = "https://github.com/login/oauth/access_token";
   try {
     const r1 = await axios.post(
-      "https://github.com/login/oauth/access_token",
+      getAccessToken,
       {
         client_id: process.env.OAUTH_CLIENT_ID,
         client_secret: process.env.OAUTH_CLIENT_SECRET,
@@ -27,22 +29,6 @@ app.post("/authenticate", async (req, res) => {
     );
     const accessToken = r1.data.access_token;
 
-    const loadUserFromGithub = async (token) => {
-      let res = await axios.get("https://api.github.com/user", {
-        headers: {
-          Authorization: "token " + token,
-        },
-      });
-      const user = {
-        github: res.data.login,
-        name: res.data.name,
-        public_repos: res.data.public_repos,
-        avatar_url: res.data.avatar_url,
-        followers: res.data.followers,
-        following: res.data.following,
-      };
-      return user;
-    };
     const user = await loadUserFromGithub(accessToken);
     res.json(user);
   } catch (e) {

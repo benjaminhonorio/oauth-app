@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Redirect } from "react-router-dom";
+import { Redirect, useLocation } from "react-router-dom";
 import Styled from "styled-components";
 import GithubIcon from "mdi-react/GithubIcon";
 import { AuthContext } from "../App";
@@ -10,6 +10,8 @@ export default function Login() {
   const [data, setData] = useState({ errorMessage: "", isLoading: false });
 
   const { client_id, redirect_uri } = state;
+
+  const gitHubOauth = `https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}`;
 
   useEffect(() => {
     // After requesting Github access, Github redirects back to your app with a code parameter
@@ -30,7 +32,6 @@ export default function Login() {
       // Use code parameter and other parameters to make POST request to proxy_server
       try {
         axios.post(proxy_url, requestData).then((data) => {
-          console.log("entro");
           dispatch({
             type: "LOGIN",
             payload: { user: data, isLoggedIn: true },
@@ -55,7 +56,7 @@ export default function Login() {
         <div>
           <h1>Welcome</h1>
           <span>Super amazing app</span>
-          <span>{data.errorMessage}</span>
+          {data.errorMessage && <span>{data.errorMessage}</span>}
           <div className="login-container">
             {data.isLoading ? (
               <div className="loader-container">
@@ -63,12 +64,9 @@ export default function Login() {
               </div>
             ) : (
               <>
-                {
-                  // Link to request GitHub access
-                }
                 <a
                   className="login-link"
-                  href={`https://github.com/login/oauth/authorize?scope=user&client_id=${client_id}&redirect_uri=${redirect_uri}`}
+                  href={gitHubOauth}
                   onClick={() => {
                     setData({ ...data, errorMessage: "" });
                   }}
